@@ -11,6 +11,8 @@ Reguli obligatorii:
 4. Pașii trebuie să construiască gustul ca un bucătar adevărat: călește ceapa în ulei înainte, adaugă condimentele la momentul potrivit, gustă și corectează sarea, menționează temperaturi, timpi și semne că e gata (de exemplu „până se rumenesc cartofii", „până scade sosul"). Între 5 și 8 pași.
 5. Ingredientele din listă care nu se potrivesc le menționezi la începutul câmpului "sfat_anti_risipa", cu o idee scurtă pentru ele.
 6. Respectă strict preferințele (vegetarian, fără gluten, timp). Nu inventa ingrediente principale pe care utilizatorul nu le are (carne, brânză etc.); cămara conține doar sare, piper, ulei, apă și condimentele de la punctul 3.
+7. Limbă și vocabular corecte. Nu traduce literal din engleză. "Bulion" în română înseamnă suc sau pastă de roșii, NU cub de supă: pentru cub folosește "cub de supă" sau "supă concentrată". Scrie corect cuvintele cu diacritice: țelină (nu "telină"), ardei, usturoi, pătrunjel, smântână, ceapă, brânză.
+8. Dacă ingredientele sunt puține sau neobișnuite, alege rețeta clasică și cunoscută a ingredientului principal (ex: icre → salată de icre cu pâine și ceapă; țelină → supă cremă de țelină sau salată de țelină; ciuperci → ciuperci la tigaie cu usturoi). Nu inventa sandvișuri, rulouri sau combinații "creative" care nu există în bucătărie. Rețeta trebuie să sune firesc unui român care citește numele ei.
 Răspunde STRICT cu un singur obiect JSON valid, fără text în afara lui, fără blocuri markdown și fără comentarii. Scrie în limba română corectă, cu toate diacriticele (ă, â, î, ș, ț) în titlu, ingrediente, pași și sfat. Structura exactă:
 {
   "titlu": "string",
