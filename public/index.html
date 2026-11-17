@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0E4A37">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Asistent de bucătărie – Nu arunca. Gătește.">
-<meta property="og:description" content="Alege ingredientele din frigider și primești o rețetă gustoasă, plus cât economisești.">
+<meta property="og:description" content="Alege ingredientele din frigider și primești o rețetă gustoasă care nu lasă nimic să se strice.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍳</text></svg>">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +48,7 @@
       <div id="counter" class="text-xs sm:text-sm font-bold rounded-full px-3 py-1.5 mr-10 sm:mr-0" style="background:var(--butter);color:var(--ink)"></div>
     </div>
     <h1 class="display font-extrabold text-5xl sm:text-6xl leading-[0.95] mt-8">Nu arunca.<br>Gătește.</h1>
-    <p class="mt-4 text-lg sm:text-xl max-w-md text-white/85">Alege ce ai în frigider și primești în câteva secunde o rețetă care folosește tot, plus cât economisești.</p>
+    <p class="mt-4 text-lg sm:text-xl max-w-md text-white/85">Alege ce ai în frigider și primești în câteva secunde o rețetă care folosește cât mai mult din ce ai.</p>
   </div>
 </header>
 
@@ -108,7 +108,7 @@
       <p class="opacity-80">Cu Chef Pro gătești fără limită și nu mai arunci mâncare. Sau revino mâine pentru încă 3 rețete gratuite.</p>
       <ul class="mt-4 space-y-2 text-sm font-semibold">
         <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Rețete nelimitate în fiecare zi</li>
-        <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Estimare a banilor economisiți la fiecare rețetă</li>
+        <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Sfaturi anti-risipă pentru fiecare rețetă</li>
         <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Acces prioritar la funcții noi</li>
       </ul>
       <a id="payLink" href="#" target="_blank" rel="noopener" class="cta mt-6 block text-center rounded-2xl py-4 text-lg font-bold text-white">Devino Chef Pro</a>
@@ -214,9 +214,11 @@
   const EMOJI_RULES = [
     [/somon|pește|peste|păstrăv|crap|ton\b/, "🐟"], [/pui|piept|curcan/, "🍗"], [/vită|vita|porc|carne|ciolan|mici|cârnați|şnițel|șnițel/, "🥩"],
     [/paste|spaghete|macaroane|tăiței/, "🍝"], [/orez|pilaf/, "🍚"], [/ciuperci/, "🍄"], [/omlet|ochiuri|ouă|oua/, "🍳"],
-    [/supă|supa|ciorbă|ciorba|cremă|crema/, "🍲"], [/cartofi/, "🥔"], [/roșii|rosii/, "🍅"], [/salată|salata/, "🥗"], [/pâine|paine|sandvi|tartine/, "🥪"]
+    [/supă|supa|ciorbă|ciorba/, "🍲"], [/cartofi/, "🥔"], [/roșii|rosii/, "🍅"], [/salată|salata/, "🥗"], [/pâine|paine|sandvi|tartine/, "🥪"]
   ];
   function dishEmoji(r) {
+    const own = String(r.emoji || "").trim();
+    if (own && [...own].length <= 4 && /\p{Extended_Pictographic}/u.test(own)) return own;
     const title = String(r.titlu).toLowerCase();
     const all = title + " " + r.ingrediente.join(" ").toLowerCase();
     for (const [re, e] of EMOJI_RULES) if (re.test(title)) return e;
