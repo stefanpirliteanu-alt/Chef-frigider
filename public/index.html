@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chef Frigider AI – rețete anti-risipă</title>
+<title>Asistent de bucătărie – rețete anti-risipă</title>
 <meta name="description" content="Spune ce ai în frigider și primești în câteva secunde o rețetă gustoasă, fără risipă. Gratuit: 3 rețete pe zi.">
 <meta name="theme-color" content="#0E4A37">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Chef Frigider AI – Nu arunca. Gătește.">
+<meta property="og:title" content="Asistent de bucătărie – Nu arunca. Gătește.">
 <meta property="og:description" content="Alege ingredientele din frigider și primești o rețetă gustoasă, plus cât economisești.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧊</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍳</text></svg>">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
   <span class="magnet" style="top:18px;right:14px;transform:rotate(10deg);font-size:1.8rem" aria-hidden="true">🥚</span>
   <div class="max-w-2xl mx-auto relative">
     <div class="flex items-center justify-between">
-      <div class="display font-extrabold text-lg flex items-center gap-2"><span aria-hidden="true">🧊</span> Chef Frigider AI</div>
+      <div class="display font-extrabold text-lg flex items-center gap-2"><span aria-hidden="true">🍳</span> Asistent de bucătărie</div>
       <div id="counter" class="text-xs sm:text-sm font-bold rounded-full px-3 py-1.5 mr-10 sm:mr-0" style="background:var(--butter);color:var(--ink)"></div>
     </div>
     <h1 class="display font-extrabold text-5xl sm:text-6xl leading-[0.95] mt-8">Nu arunca.<br>Gătește.</h1>
@@ -210,12 +210,60 @@
   }
   const cleanStep = (p) => String(p).replace(/^\s*\d+[\.\)]\s*/, "");
 
+  // ---------- Imagine rețetă ----------
+  const EMOJI_RULES = [
+    [/somon|pește|peste|păstrăv|crap|ton\b/, "🐟"], [/pui|piept|curcan/, "🍗"], [/vită|vita|porc|carne|ciolan|mici|cârnați|şnițel|șnițel/, "🥩"],
+    [/paste|spaghete|macaroane|tăiței/, "🍝"], [/orez|pilaf/, "🍚"], [/ciuperci/, "🍄"], [/omlet|ochiuri|ouă|oua/, "🍳"],
+    [/supă|supa|ciorbă|ciorba|cremă|crema/, "🍲"], [/cartofi/, "🥔"], [/roșii|rosii/, "🍅"], [/salată|salata/, "🥗"], [/pâine|paine|sandvi|tartine/, "🥪"]
+  ];
+  function dishEmoji(r) {
+    const title = String(r.titlu).toLowerCase();
+    const all = title + " " + r.ingrediente.join(" ").toLowerCase();
+    for (const [re, e] of EMOJI_RULES) if (re.test(title)) return e;
+    for (const [re, e] of EMOJI_RULES) if (re.test(all)) return e;
+    return "🍽️";
+  }
+  function buildHero(r) {
+    const box = el("div", "relative flex items-center justify-center overflow-hidden");
+    box.style.height = "190px";
+    box.style.background = "linear-gradient(135deg, var(--mint), #BFE3D0)";
+    const em = el("span", "", dishEmoji(r));
+    em.style.fontSize = "84px";
+    em.setAttribute("aria-hidden", "true");
+    box.appendChild(em);
+    const q = String(r.imagine_cautare || "").trim();
+    if (q) {
+      fetch("/api/image?q=" + encodeURIComponent(q))
+        .then((res) => (res.ok ? res.json() : null))
+        .then((d) => {
+          if (!d || !d.url) return;
+          const img = new Image();
+          img.alt = r.titlu;
+          img.className = "w-full h-full object-cover";
+          img.onload = () => {
+            box.replaceChildren(img);
+            const credit = el("a", "absolute bottom-2 right-2 rounded-full px-2.5 py-1 text-xs font-semibold", "Foto: " + (d.autor || "Pexels"));
+            credit.href = d.link || "https://www.pexels.com";
+            credit.target = "_blank";
+            credit.rel = "noopener";
+            credit.style.background = "rgba(255,255,255,.9)";
+            credit.style.color = "var(--ink)";
+            box.appendChild(credit);
+          };
+          img.src = d.url;
+        })
+        .catch(() => {});
+    }
+    return box;
+  }
+
   function renderRecipe(r) {
     lastRecipe = r;
     resultBox.replaceChildren();
     const card = el("article", "pop rounded-[2rem] overflow-hidden bg-white border shadow-xl shadow-emerald-900/10");
     card.style.borderColor = "var(--line)";
 
+    card.appendChild(buildHero(r));
     const head = el("div", "p-5 sm:p-7");
     head.style.background = "var(--mint)";
     const time = el("span", "inline-block rounded-full px-3 py-1 text-sm font-bold bg-white", "⏱ " + r.timp_preparare);
@@ -286,7 +334,7 @@
     save.addEventListener("click", (e) => saveFav(r, e.currentTarget));
     actions.appendChild(save);
     const wa = el("a", "col-span-2 text-center rounded-2xl py-3 font-bold", "💬 Trimite pe WhatsApp");
-    wa.href = "https://wa.me/?text=" + encodeURIComponent(recipeText(r) + "\n\nGătită cu Chef Frigider AI: " + location.href);
+    wa.href = "https://wa.me/?text=" + encodeURIComponent(recipeText(r) + "\n\nGătită cu Asistent de bucătărie: " + location.href);
     wa.target = "_blank";
     wa.rel = "noopener";
     wa.style.background = "#25D366";
