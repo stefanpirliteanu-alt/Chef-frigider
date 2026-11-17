@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chef Frigider AI – rețete anti-risipă</title>
+<meta name="description" content="Spune ce ai în frigider și primești în câteva secunde o rețetă gustoasă, fără risipă. Gratuit: 3 rețete pe zi.">
+<meta name="theme-color" content="#0E4A37">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Chef Frigider AI – Nu arunca. Gătește.">
+<meta property="og:description" content="Alege ingredientele din frigider și primești o rețetă gustoasă, plus cât economisești.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧊</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --basil:#0E4A37; --basil2:#146B4E; --tomato:#E8452C; --tomato-d:#C93820; --butter:#FFD95A; --mint:#DDF1E6; --bg:#F4F8F5; --ink:#10261F; --line:#D5E4DB; }
+  body { background:var(--bg); color:var(--ink); font-family:'Figtree',system-ui,sans-serif; }
+  .display { font-family:'Bricolage Grotesque','Figtree',sans-serif; letter-spacing:-0.025em; }
+  .hero { background:radial-gradient(circle at 85% 10%, #1B8A66 0, transparent 45%), var(--basil); border-radius:0 0 2.5rem 2.5rem; }
+  .magnet { position:absolute; font-size:2.2rem; filter:drop-shadow(0 6px 6px rgba(0,0,0,.25)); user-select:none; }
+  .ing { transition:transform .12s ease, background .12s ease; }
+  .ing:active { transform:scale(.94); }
+  .ing.on { background:var(--basil); color:#fff; border-color:var(--basil); }
+  .chip input:checked + span { background:var(--butter); border-color:var(--butter); color:var(--ink); }
+  .chip input:focus-visible + span, .ing:focus-visible, button:focus-visible, textarea:focus-visible, a:focus-visible { outline:3px solid var(--butter); outline-offset:2px; }
+  .cta { background:var(--tomato); box-shadow:0 6px 0 var(--tomato-d); transition:transform .1s ease, box-shadow .1s ease; }
+  .cta:hover:not(:disabled) { transform:translateY(1px); box-shadow:0 5px 0 var(--tomato-d); }
+  .cta:active:not(:disabled) { transform:translateY(5px); box-shadow:0 1px 0 var(--tomato-d); }
+  .spin { animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .pop { animation:pop .35s ease-out; }
+  @keyframes pop { from { opacity:0; transform:translateY(14px) scale(.98); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation-duration:2s; } .pop { animation:none; } .cta, .ing { transition:none; } }
+  .step-n { background:var(--tomato); color:#fff; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="hero text-white px-4 pt-6 pb-24 sm:pb-28 relative overflow-hidden">
+  <span class="magnet hidden sm:block" style="top:28px;right:9%;transform:rotate(14deg)" aria-hidden="true">🍅</span>
+  <span class="magnet hidden sm:block" style="top:120px;right:20%;transform:rotate(-12deg)" aria-hidden="true">🧀</span>
+  <span class="magnet" style="top:18px;right:14px;transform:rotate(10deg);font-size:1.8rem" aria-hidden="true">🥚</span>
+  <div class="max-w-2xl mx-auto relative">
+    <div class="flex items-center justify-between">
+      <div class="display font-extrabold text-lg flex items-center gap-2"><span aria-hidden="true">🧊</span> Chef Frigider AI</div>
+      <div id="counter" class="text-xs sm:text-sm font-bold rounded-full px-3 py-1.5 mr-10 sm:mr-0" style="background:var(--butter);color:var(--ink)"></div>
+    </div>
+    <h1 class="display font-extrabold text-5xl sm:text-6xl leading-[0.95] mt-8">Nu arunca.<br>Gătește.</h1>
+    <p class="mt-4 text-lg sm:text-xl max-w-md text-white/85">Alege ce ai în frigider și primești în câteva secunde o rețetă care folosește tot, plus cât economisești.</p>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 -mt-16 sm:-mt-20 pb-16 relative">
+
+  <section class="rounded-[2rem] p-5 sm:p-7 bg-white border shadow-xl shadow-emerald-900/10" style="border-color:var(--line)">
+    <label for="ingrediente" class="display text-2xl font-extrabold block">Ce ai în frigider?</label>
+    <p class="text-sm opacity-70 mt-1">Atinge ingredientele sau scrie-le tu, separate prin virgulă.</p>
+
+    <div id="quick" class="flex flex-wrap gap-2 mt-4"></div>
+
+    <textarea id="ingrediente" rows="2" maxlength="500"
+      class="w-full mt-4 rounded-2xl border-2 p-3.5 text-base resize-none bg-white"
+      style="border-color:var(--line)"
+      placeholder="ex: ouă, roșii, brânză, o felie de pâine veche"></textarea>
+
+    <fieldset class="mt-4">
+      <legend class="font-bold text-sm mb-2">Preferințe</legend>
+      <div class="flex flex-wrap gap-2">
+        <label class="chip cursor-pointer"><input type="checkbox" class="sr-only" value="Vegetarian"><span class="inline-block rounded-full border-2 px-4 py-2 text-sm font-semibold select-none" style="border-color:var(--line)">🥦 Vegetarian</span></label>
+        <label class="chip cursor-pointer"><input type="checkbox" class="sr-only" value="Sub 15 minute"><span class="inline-block rounded-full border-2 px-4 py-2 text-sm font-semibold select-none" style="border-color:var(--line)">⚡ Sub 15 minute</span></label>
+        <label class="chip cursor-pointer"><input type="checkbox" class="sr-only" value="Fără gluten"><span class="inline-block rounded-full border-2 px-4 py-2 text-sm font-semibold select-none" style="border-color:var(--line)">🌾 Fără gluten</span></label>
+      </div>
+    </fieldset>
+
+    <div class="mt-5 flex items-center justify-between">
+      <span class="font-bold text-sm">Pentru câte persoane?</span>
+      <div class="flex items-center gap-3">
+        <button id="minus" type="button" class="w-10 h-10 rounded-full border-2 text-xl font-bold" style="border-color:var(--line)" aria-label="Mai puține persoane">−</button>
+        <span id="servings" class="w-6 text-center text-lg font-bold" aria-live="polite">2</span>
+        <button id="plus" type="button" class="w-10 h-10 rounded-full border-2 text-xl font-bold" style="border-color:var(--line)" aria-label="Mai multe persoane">+</button>
+      </div>
+    </div>
+
+    <button id="btn" type="button" class="cta mt-6 w-full rounded-2xl py-4 text-lg font-bold text-white flex items-center justify-center gap-3 disabled:opacity-80 disabled:cursor-wait">
+      <svg id="spinner" class="spin hidden w-5 h-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+      <span id="btnText">Generează Rețetă</span>
+    </button>
+    <p id="error" class="hidden mt-4 rounded-xl p-3 text-sm font-semibold" style="background:#FDE8E4;color:#8A2B1B" role="alert"></p>
+  </section>
+
+  <section id="result" class="hidden mt-6" aria-live="polite"></section>
+
+  <section id="saved" class="hidden mt-8"></section>
+
+  <p class="text-center text-xs opacity-60 mt-10">Rețetele sunt generate de AI. Verifică alergenii și termenul de valabilitate al ingredientelor.</p>
+</main>
+
+<!-- Modal Chef Pro -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style="background:rgba(14,74,55,.7)" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="pop w-full max-w-md rounded-[2rem] overflow-hidden bg-white">
+    <div class="px-6 sm:px-8 pt-7 pb-5 text-white" style="background:var(--basil)">
+      <div class="text-4xl" aria-hidden="true">👨‍🍳</div>
+      <h2 id="modalTitle" class="display text-3xl font-extrabold mt-2 leading-tight">Ai gătit cele 3 rețete de azi</h2>
+    </div>
+    <div class="p-6 sm:p-8">
+      <p class="opacity-80">Cu Chef Pro gătești fără limită și nu mai arunci mâncare. Sau revino mâine pentru încă 3 rețete gratuite.</p>
+      <ul class="mt-4 space-y-2 text-sm font-semibold">
+        <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Rețete nelimitate în fiecare zi</li>
+        <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Estimare a banilor economisiți la fiecare rețetă</li>
+        <li class="flex gap-2"><span style="color:var(--basil2)">✔</span> Acces prioritar la funcții noi</li>
+      </ul>
+      <a id="payLink" href="#" target="_blank" rel="noopener" class="cta mt-6 block text-center rounded-2xl py-4 text-lg font-bold text-white">Devino Chef Pro</a>
+      <button id="closeModal" type="button" class="mt-4 w-full rounded-2xl py-3 font-semibold border-2" style="border-color:var(--line)">Poate mai târziu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ================== CONFIGURARE ==================
+  // Cheia AI NU mai e în pagină: stă ca secret în Cloudflare, iar cererile merg prin /api/recipe.
+  const API_URL = "/api/recipe";
+  const STRIPE_LINK = "https://buy.stripe.com/LINKUL_TAU"; // <-- linkul tău Stripe pentru Chef Pro
+  const FREE_LIMIT = 3;
+  const STORAGE_KEY = "chef_frigider_usage";
+  // =================================================
+
+  const QUICK = [["🥚","ouă"],["🍅","roșii"],["🧀","brânză"],["🥔","cartofi"],["🧅","ceapă"],["🥕","morcovi"],["🍚","orez"],["🍞","pâine"],["🍝","paste"],["🍗","pui"],["🥛","lapte"],["🍄","ciuperci"]];
+
+  const $ = (id) => document.getElementById(id);
+  const btn = $("btn"), spinner = $("spinner"), btnText = $("btnText");
+  const errorBox = $("error"), resultBox = $("result"), modal = $("modal"), input = $("ingrediente");
+  let lastRecipe = null, loadingTimer = null;
+
+  $("payLink").href = STRIPE_LINK;
+
+  // ---------- Ingrediente rapide ----------
+  function getList() { return input.value.split(",").map((s) => s.trim()).filter(Boolean); }
+  function syncChips() {
+    const list = getList().map((s) => s.toLowerCase());
+    document.querySelectorAll(".ing").forEach((b) => {
+      const on = list.includes(b.dataset.name);
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  QUICK.forEach(([emoji, name]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.name = name;
+    b.className = "ing rounded-full border-2 px-3.5 py-2 text-sm font-semibold bg-white";
+    b.style.borderColor = "var(--line)";
+    b.textContent = emoji + " " + name;
+    b.addEventListener("click", () => {
+      const list = getList();
+      const i = list.findIndex((s) => s.toLowerCase() === name);
+      if (i >= 0) list.splice(i, 1); else list.push(name);
+      input.value = list.join(", ");
+      syncChips();
+    });
+    $("quick").appendChild(b);
+  });
+  input.addEventListener("input", syncChips);
+
+  // ---------- Limită freemium ----------
+  function today() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function getUsage() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (raw && raw.date === today() && Number.isInteger(raw.count)) return raw;
+    } catch (e) {}
+    return { date: today(), count: 0 };
+  }
+  function saveUsage(u) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); } catch (e) {} }
+  function renderCounter() {
+    const left = Math.max(0, FREE_LIMIT - getUsage().count);
+    $("counter").textContent = left === 1 ? "1 rețetă gratuită azi" : left + " rețete gratuite azi";
+  }
+  function openModal() { modal.classList.remove("hidden"); $("payLink").focus(); }
+  function closeModal() { modal.classList.add("hidden"); btn.focus(); }
+  $("closeModal").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal(); });
+
+  // ---------- UI helpers ----------
+  const WAIT_MSGS = ["Controlez frigiderul…", "Caut combinații bune…", "Calculez ce economisești…", "Aproape gata…"];
+  function setLoading(on) {
+    btn.disabled = on;
+    spinner.classList.toggle("hidden", !on);
+    clearInterval(loadingTimer);
+    if (on) {
+      let i = 0;
+      btnText.textContent = WAIT_MSGS[0];
+      loadingTimer = setInterval(() => { i = Math.min(i + 1, WAIT_MSGS.length - 1); btnText.textContent = WAIT_MSGS[i]; }, 1800);
+    } else {
+      btnText.textContent = "Generează Rețetă";
+    }
+  }
+  function showError(msg) { errorBox.textContent = msg; errorBox.classList.remove("hidden"); }
+  function clearError() { errorBox.classList.add("hidden"); errorBox.textContent = ""; }
+  function el(tag, className, text) {
+    const n = document.createElement(tag);
+    if (className) n.className = className;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  const cleanStep = (p) => String(p).replace(/^\s*\d+[\.\)]\s*/, "");
+
+  function renderRecipe(r) {
+    lastRecipe = r;
+    resultBox.replaceChildren();
+    const card = el("article", "pop rounded-[2rem] overflow-hidden bg-white border shadow-xl shadow-emerald-900/10");
+    card.style.borderColor = "var(--line)";
+
+    const head = el("div", "p-5 sm:p-7");
+    head.style.background = "var(--mint)";
+    const time = el("span", "inline-block rounded-full px-3 py-1 text-sm font-bold bg-white", "⏱ " + r.timp_preparare);
+    head.appendChild(time);
+    head.appendChild(el("h2", "display text-3xl sm:text-4xl font-extrabold leading-tight mt-3", r.titlu));
+    card.appendChild(head);
+
+    const body = el("div", "p-5 sm:p-7");
+
+    body.appendChild(el("h3", "display text-xl font-extrabold mb-3", "Ai nevoie de"));
+    const ul = el("ul", "space-y-2");
+    r.ingrediente.forEach((i) => {
+      const li = el("li", "flex gap-3 items-start");
+      const dot = el("span", "mt-2 w-2 h-2 rounded-full shrink-0");
+      dot.style.background = "var(--tomato)";
+      li.appendChild(dot);
+      li.appendChild(el("span", "", String(i)));
+      ul.appendChild(li);
+    });
+    body.appendChild(ul);
+
+    body.appendChild(el("h3", "display text-xl font-extrabold mt-7 mb-3", "Cum o faci"));
+    const ol = el("ol", "space-y-4");
+    r.pasi.forEach((p, idx) => {
+      const li = el("li", "flex gap-3 items-start");
+      li.appendChild(el("span", "step-n shrink-0 w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center", String(idx + 1)));
+      li.appendChild(el("span", "leading-relaxed pt-1", cleanStep(p)));
+      ol.appendChild(li);
+    });
+    body.appendChild(ol);
+
+    if (Array.isArray(r.nefolosite) && r.nefolosite.length) {
+      body.appendChild(el("p", "mt-6 text-sm opacity-75", "Rămase pe dinafară: " + r.nefolosite.join(", ") + "."));
+    }
+    if (Array.isArray(r.de_cumparat) && r.de_cumparat.length) {
+      const shop = el("div", "mt-5 rounded-2xl border-2 p-4");
+      shop.style.borderColor = "var(--line)";
+      shop.appendChild(el("p", "font-bold mb-2", "🛒 Dacă vrei să iasă și mai bună"));
+      const sl = el("ul", "space-y-1 text-sm");
+      r.de_cumparat.forEach((i) => sl.appendChild(el("li", "", String(i))));
+      shop.appendChild(sl);
+      body.appendChild(shop);
+    }
+
+    const tip = el("div", "mt-7 rounded-2xl p-4 flex gap-3");
+    tip.style.background = "#FFF3C4";
+    tip.appendChild(el("span", "text-2xl", "💰"));
+    const tipText = el("div");
+    tipText.appendChild(el("p", "font-bold mb-1", "Sfat anti-risipă"));
+    tipText.appendChild(el("p", "leading-relaxed", r.sfat_anti_risipa));
+    tip.appendChild(tipText);
+    body.appendChild(tip);
+
+    const actions = el("div", "mt-6 grid grid-cols-2 gap-3");
+    const copy = el("button", "rounded-2xl py-3 font-bold border-2", "📋 Copiază rețeta");
+    copy.type = "button";
+    copy.style.borderColor = "var(--line)";
+    copy.addEventListener("click", copyRecipe);
+    const again = el("button", "rounded-2xl py-3 font-bold border-2", "🔄 Altă variantă");
+    again.type = "button";
+    again.style.borderColor = "var(--line)";
+    again.addEventListener("click", generate);
+    actions.appendChild(copy);
+    actions.appendChild(again);
+    const save = el("button", "rounded-2xl py-3 font-bold border-2", "⭐ Salvează");
+    save.type = "button";
+    save.style.borderColor = "var(--line)";
+    save.addEventListener("click", (e) => saveFav(r, e.currentTarget));
+    actions.appendChild(save);
+    const wa = el("a", "col-span-2 text-center rounded-2xl py-3 font-bold", "💬 Trimite pe WhatsApp");
+    wa.href = "https://wa.me/?text=" + encodeURIComponent(recipeText(r) + "\n\nGătită cu Chef Frigider AI: " + location.href);
+    wa.target = "_blank";
+    wa.rel = "noopener";
+    wa.style.background = "#25D366";
+    wa.style.color = "var(--ink)";
+    actions.appendChild(wa);
+    body.appendChild(actions);
+
+    card.appendChild(body);
+    resultBox.appendChild(card);
+    resultBox.classList.remove("hidden");
+    resultBox.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function copyRecipe() {
+    if (!lastRecipe) return;
+    const r = lastRecipe;
+    const txt = r.titlu + " (" + r.timp_preparare + ")\n\nIngrediente:\n" + r.ingrediente.map((i) => "- " + i).join("\n") +
+      "\n\nPași:\n" + r.pasi.map((p, i) => (i + 1) + ". " + cleanStep(p)).join("\n") + "\n\nSfat anti-risipă: " + r.sfat_anti_risipa;
+    const b = event.currentTarget;
+    try { await navigator.clipboard.writeText(txt); b.textContent = "✔ Copiat"; }
+    catch (e) { b.textContent = "Nu s-a putut copia"; }
+    setTimeout(() => { b.textContent = "📋 Copiază rețeta"; }, 2000);
+  }
+
+  // ---------- Parsare și validare răspuns ----------
+  function parseRecipe(content) {
+    let txt = String(content || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    const a = txt.indexOf("{"), b = txt.lastIndexOf("}");
+    if (a === -1 || b === -1) throw new Error("Răspuns fără JSON");
+    const obj = JSON.parse(txt.slice(a, b + 1));
+    const ok = typeof obj.titlu === "string" && obj.timp_preparare &&
+      Array.isArray(obj.ingrediente) && Array.isArray(obj.pasi) && obj.sfat_anti_risipa;
+    if (!ok) throw new Error("JSON incomplet");
+    obj.timp_preparare = String(obj.timp_preparare);
+    obj.sfat_anti_risipa = String(obj.sfat_anti_risipa);
+    return obj;
+  }
+
+  // ---------- Generare ----------
+  async function generate() {
+    if (btn.disabled) return;
+    clearError();
+    const ingredients = input.value.trim();
+    if (!ingredients) {
+      showError("Alege sau scrie cel puțin un ingredient, de exemplu: ouă, roșii, brânză.");
+      input.focus();
+      return;
+    }
+    if (getUsage().count >= FREE_LIMIT) { openModal(); return; }
+
+    const filters = Array.from(document.querySelectorAll(".chip input:checked")).map((c) => c.value);
+
+    setLoading(true);
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ingrediente: ingredients, preferinte: filters, portii: servings })
+      });
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) throw new Error("Serviciul nu este configurat corect. Încearcă mai târziu.");
+        if (res.status === 429) throw new Error("Prea multe cereri. Încearcă din nou peste câteva secunde.");
+        throw new Error("Serviciul AI a răspuns cu eroarea " + res.status + ".");
+      }
+      const data = await res.json();
+      const recipe = parseRecipe(data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content);
+      renderRecipe(recipe);
+      const u = getUsage();
+      u.count += 1;
+      saveUsage(u);
+      renderCounter();
+    } catch (err) {
+      if (err instanceof SyntaxError || /JSON/.test(err.message)) {
+        showError("Rețeta nu a venit în formatul corect. Apasă din nou „Generează Rețetă”.");
+      } else if (err instanceof TypeError) {
+        showError("Nu mă pot conecta la serviciul AI. Verifică internetul și încearcă din nou.");
+      } else {
+        showError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ---------- Persoane ----------
+  let servings = 2;
+  function setServings(n) { servings = Math.min(8, Math.max(1, n)); $("servings").textContent = servings; }
+  $("minus").addEventListener("click", () => setServings(servings - 1));
+  $("plus").addEventListener("click", () => setServings(servings + 1));
+
+  // ---------- Text pentru partajare ----------
+  function recipeText(r) {
+    return r.titlu + " (" + r.timp_preparare + ")\n\nIngrediente:\n" + r.ingrediente.map((i) => "- " + i).join("\n") +
+      "\n\nPași:\n" + r.pasi.map((p, i) => (i + 1) + ". " + cleanStep(p)).join("\n") + "\n\nSfat anti-risipă: " + r.sfat_anti_risipa;
+  }
+
+  // ---------- Rețete salvate ----------
+  const FAV_KEY = "chef_frigider_fav";
+  function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); } catch (e) { return []; } }
+  function setFavs(a) { try { localStorage.setItem(FAV_KEY, JSON.stringify(a)); } catch (e) {} }
+  function saveFav(r, b) {
+    const f = getFavs();
+    if (!f.some((x) => x.titlu === r.titlu)) { f.unshift(r); setFavs(f.slice(0, 30)); }
+    renderFavs();
+    b.textContent = "⭐ Salvată";
+  }
+  function renderFavs() {
+    const favs = getFavs(), box = $("saved");
+    box.replaceChildren();
+    if (!favs.length) { box.classList.add("hidden"); return; }
+    box.classList.remove("hidden");
+    box.appendChild(el("h2", "display text-2xl font-extrabold mb-3", "⭐ Rețetele tale"));
+    favs.forEach((r, i) => {
+      const row = el("div", "flex items-center gap-2 mb-2");
+      const open = el("button", "flex-1 text-left rounded-2xl border-2 bg-white px-4 py-3 font-semibold", r.titlu + " · " + r.timp_preparare);
+      open.type = "button";
+      open.style.borderColor = "var(--line)";
+      open.addEventListener("click", () => renderRecipe(r));
+      const del = el("button", "w-11 h-11 rounded-full border-2 bg-white", "🗑");
+      del.type = "button";
+      del.style.borderColor = "var(--line)";
+      del.setAttribute("aria-label", "Șterge rețeta");
+      del.addEventListener("click", () => { const f = getFavs(); f.splice(i, 1); setFavs(f); renderFavs(); });
+      row.appendChild(open);
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+
+  btn.addEventListener("click", generate);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) generate(); });
+  renderCounter();
+  renderFavs();
+</script>
+</body>
+</html>
