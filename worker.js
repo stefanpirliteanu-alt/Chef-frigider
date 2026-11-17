@@ -26,6 +26,15 @@ Pașii din "pasi" nu conțin numerotare în text, aceasta se adaugă în aplica�
 const reply = (obj, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
 
+function isValidRecipe(text) {
+  try {
+    let c = String(JSON.parse(text).choices[0].message.content || "").trim();
+    c = c.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    const o = JSON.parse(c.slice(c.indexOf("{"), c.lastIndexOf("}") + 1));
+    return typeof o.titlu === "string" && !!o.timp_preparare && Array.isArray(o.ingrediente) && Array.isArray(o.pasi) && !!o.sfat_anti_risipa;
+  } catch (e) { return false; }
+}
+
 async function handleRecipe(request, env) {
   if (!env.GROQ_API_KEY) return reply({ error: "Lipsește GROQ_API_KEY" }, 500);
 
@@ -44,21 +53,28 @@ async function handleRecipe(request, env) {
   const userMsg = "Ingrediente disponibile: " + ingrediente + ".\nPreferințe: " + (prefs.length ? prefs.join(", ") : "niciuna") +
     ".\nNumăr de persoane: " + portii + " (cantitățile din rețetă sunt pentru atâtea persoane).";
 
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.GROQ_API_KEY },
-    body: JSON.stringify({
-      model: MODEL,
-      temperature: 0.5,
-      max_completion_tokens: 4000,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMsg }
-      ]
-    })
-  });
-  return new Response(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } });
+  // Dacă modelul întoarce un JSON incomplet, mai încearcă o dată (de obicei merge la a doua încercare)
+  let lastText = "";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.GROQ_API_KEY },
+      body: JSON.stringify({
+        model: MODEL,
+        temperature: 0.5,
+        max_completion_tokens: 4000,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMsg }
+        ]
+      })
+    });
+    lastText = await res.text();
+    if (!res.ok) return new Response(lastText, { status: res.status, headers: { "Content-Type": "application/json" } });
+    if (isValidRecipe(lastText)) break;
+  }
+  return new Response(lastText, { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
 export default {
