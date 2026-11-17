@@ -11,7 +11,7 @@ Reguli obligatorii:
 4. Pașii trebuie să construiască gustul ca un bucătar adevărat: călește ceapa în ulei înainte, adaugă condimentele la momentul potrivit, gustă și corectează sarea, menționează temperaturi, timpi și semne că e gata (de exemplu „până se rumenesc cartofii", „până scade sosul"). Între 5 și 8 pași.
 5. Ingredientele din listă care nu se potrivesc le menționezi la începutul câmpului "sfat_anti_risipa", cu o idee scurtă pentru ele.
 6. Respectă strict preferințele (vegetarian, fără gluten, timp). Nu inventa ingrediente principale pe care utilizatorul nu le are (carne, brânză etc.); cămara conține doar sare, piper, ulei, apă și condimentele de la punctul 3.
-7. Limbă și vocabular corecte. Nu traduce literal din engleză. "Bulion" în română înseamnă suc sau pastă de roșii, NU cub de supă: pentru cub folosește "cub de supă" sau "supă concentrată". Scrie corect cuvintele cu diacritice: țelină (nu "telină"), ardei, usturoi, pătrunjel, smântână, ceapă, brânză.
+7. Limbă și vocabular corecte. Nu traduce literal din engleză. Cuvântul "bulion" înseamnă DOAR bulion adevărat: pastă concentrată de roșii, de ardei kapia sau combinată dintre ele, folosită la tocănițe, sosuri, ciorbe, ardei umpluți sau mâncăruri la cuptor (1-2 linguri, căline alături de ceapă). Bulionul NU este cub de supă și NU se dizolvă în apă ca supă. Dacă ai nevoie de cub de supă, scrie "cub de supă de legume" sau "cub de supă de pui". Pentru cub folosește exclusiv "cub de supă de legume" sau "cub de supă de pui"; pentru lichid folosește "supă" sau "supă de legume". Scrie corect cuvintele cu diacritice: țelină (nu "telină"), ardei, usturoi, pătrunjel, smântână, ceapă, brânză.
 8. Dacă ingredientele sunt puține sau neobișnuite, alege rețeta clasică și cunoscută a ingredientului principal (ex: icre → salată de icre cu pâine și ceapă; țelină → supă cremă de țelină sau salată de țelină; ciuperci → ciuperci la tigaie cu usturoi). Nu inventa sandvișuri, rulouri sau combinații "creative" care nu există în bucătărie. Rețeta trebuie să sune firesc unui român care citește numele ei.
 9. Fidelitate față de ingrediente: folosește EXACT ce a scris utilizatorul. "Somon" înseamnă somon proaspăt (file), nu afumat; "vită" înseamnă carne de vită; "pui" înseamnă carne de pui. Nu schimba varianta unui ingredient și nu adăuga alt ingredient principal (carne, pește, brânză, ouă) pe care utilizatorul nu l-a scris.
 10. O singură proteină principală pe rețetă: carne de vită SAU pui SAU pește SAU ouă. Dacă utilizatorul are mai multe, alege cea care se potrivește cu restul și lasă celelalte în "nefolosite". Nu pune ouă și pește sau ouă și carne în același preparat, decât în rețete clasice (ex: ochiuri pe pastramă).
@@ -19,6 +19,7 @@ Reguli obligatorii:
 12. Titlul conține doar numele preparatului, fără numărul de persoane și fără cuvinte ca "simple" sau "pentru 2 persoane" (ex: "Paste aglio e olio", nu "Paste simple cu ulei și sare pentru 2 persoane").
 13. Chiar dacă ai puține ingrediente, mâncarea trebuie să aibă gust: pentru paste fără sos fă paste aglio e olio (usturoi călit în ulei, ardei iute, pătrunjel); pentru legume adaugă usturoi, boia sau ierburi uscate. Nu face niciodată o rețetă doar cu ulei și sare.
 14. Dacă ingredientele sunt dulci (ciocolată, lapte, fructe, zahăr, brioșe) sau amestecă dulce cu sărat, poți propune un desert clasic simplu (ex: macaroane cu lapte și ciocolată, clătite, budincă) și lăsa pe dinafară ingredientele sărate care nu se potrivesc.
+15. În "sfat_anti_risipa" NU menționa sume de bani, prețuri sau economii în lei sau euro. Scrie doar sfatul practic (cum păstrezi, congelezi sau reutilizezi).
 9. Folosește ingredientele EXACT cum au fost scrise, fără să le schimbi tipul. Dacă scrie "somon", e somon proaspăt (file), nu afumat. Dacă scrie "pui", e pui crud; "vită" înseamnă carne de vită crudă; "brânză" fără alte detalii înseamnă brânză de vaci sau telemea, după potrivire. Nu adăuga ca ingredient principal ceva ce nu e în listă.
 10. Simplitate: o proteină principală (ou, pește, carne sau brânză), cel mult o garnitură și cel mult o legumă. Maximum 3-4 ingrediente principale din listă, restul le pui în "nefolosite". Nu amesteca două feluri de carne sau carne cu pește în aceeași rețetă.
 11. Pentru "Sub 15 minute" alege doar preparate cu adevărat rapide (omletă, ochiuri, salată, sandviș cald, paste simple, pește la tigaie în felii subțiri). Ingredientele care cer gătire lungă (cartofi fierți sau copți, carne de vită, pui cu os) intră la "nefolosite".
@@ -27,6 +28,7 @@ Răspunde STRICT cu un singur obiect JSON valid, fără text în afara lui, făr
   "fel_clasic": "numele unui preparat real și cunoscut pe care îl gătești (completează acest câmp primul, înainte de restul)",
   "ingrediente_alese": ["doar ingredientele primite pe care le folosești, exact cum au fost scrise"],
   "idee_fel": "numele preparatului clasic ales și ce ingrediente intră în el, într-o singură propoziție",
+  "emoji": "un singur emoji care reprezintă cel mai bine preparatul final (ex: 🐟 pește, 🍝 paste, 🍎 desert cu mere, 🍲 supă, 🥔 cartofi, 🍳 omletă)",
   "titlu": "string",
   "imagine_cautare": "numele preparatului în engleză, 2-5 cuvinte, pentru căutarea unei fotografii (ex: pan seared salmon potatoes)",
   "timp_preparare": "string, ex: 12 minute",
@@ -34,7 +36,7 @@ Răspunde STRICT cu un singur obiect JSON valid, fără text în afara lui, făr
   "pasi": ["primul pas", "al doilea pas", "..."],
   "nefolosite": ["ingrediente primite pe care nu le-ai folosit, sau listă goală"],
   "de_cumparat": ["maxim 3 ingrediente opționale pe care utilizatorul nu le-a menționat și care ar face mâncarea mai bună, sau listă goală"],
-  "sfat_anti_risipa": "string: un sfat practic de păstrare sau reutilizare a resturilor, plus o estimare în lei a banilor economisiți prin folosirea acestor ingrediente în loc să fie aruncate"
+  "sfat_anti_risipa": "string: un sfat practic de păstrare sau reutilizare a resturilor, fără sume de bani"
 }
 Pașii din "pasi" nu conțin numerotare în text, aceasta se adaugă în aplicație.`;
 
@@ -48,6 +50,22 @@ function isValidRecipe(text) {
     const o = JSON.parse(c.slice(c.indexOf("{"), c.lastIndexOf("}") + 1));
     return typeof o.titlu === "string" && !!o.timp_preparare && Array.isArray(o.ingrediente) && Array.isArray(o.pasi) && !!o.sfat_anti_risipa;
   } catch (e) { return false; }
+}
+
+function fixBulion(t) {
+  return t
+    .replace(/\s*\(sau\s+\d+\s*ml\s+bulion\)/gi, "")
+    .replace(/\bcuburi(?:\s+de)?\s+bulion\b/gi, "cuburi de supă")
+    .replace(/\bcub(?:ul)?(?:\s+de)?\s+bulion\b/gi, "cub de supă")
+    .replace(/\bbulion(?:ul)?\s+de\s+(legume|pui|carne|vită|vita|pește|peste)\b/gi, "supă de $1");
+}
+
+function cleanResponse(text) {
+  try {
+    const d = JSON.parse(text);
+    d.choices[0].message.content = fixBulion(String(d.choices[0].message.content || ""));
+    return JSON.stringify(d);
+  } catch (e) { return text; }
 }
 
 async function handleRecipe(request, env) {
@@ -89,7 +107,7 @@ async function handleRecipe(request, env) {
     if (!res.ok) return new Response(lastText, { status: res.status, headers: { "Content-Type": "application/json" } });
     if (isValidRecipe(lastText)) break;
   }
-  return new Response(lastText, { status: 200, headers: { "Content-Type": "application/json" } });
+  return new Response(cleanResponse(lastText), { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
 async function handleImage(request, env) {
