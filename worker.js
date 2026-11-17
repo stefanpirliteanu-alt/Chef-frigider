@@ -13,9 +13,19 @@ Reguli obligatorii:
 6. Respectă strict preferințele (vegetarian, fără gluten, timp). Nu inventa ingrediente principale pe care utilizatorul nu le are (carne, brânză etc.); cămara conține doar sare, piper, ulei, apă și condimentele de la punctul 3.
 7. Limbă și vocabular corecte. Nu traduce literal din engleză. "Bulion" în română înseamnă suc sau pastă de roșii, NU cub de supă: pentru cub folosește "cub de supă" sau "supă concentrată". Scrie corect cuvintele cu diacritice: țelină (nu "telină"), ardei, usturoi, pătrunjel, smântână, ceapă, brânză.
 8. Dacă ingredientele sunt puține sau neobișnuite, alege rețeta clasică și cunoscută a ingredientului principal (ex: icre → salată de icre cu pâine și ceapă; țelină → supă cremă de țelină sau salată de țelină; ciuperci → ciuperci la tigaie cu usturoi). Nu inventa sandvișuri, rulouri sau combinații "creative" care nu există în bucătărie. Rețeta trebuie să sune firesc unui român care citește numele ei.
+9. Fidelitate față de ingrediente: folosește EXACT ce a scris utilizatorul. "Somon" înseamnă somon proaspăt (file), nu afumat; "vită" înseamnă carne de vită; "pui" înseamnă carne de pui. Nu schimba varianta unui ingredient și nu adăuga alt ingredient principal (carne, pește, brânză, ouă) pe care utilizatorul nu l-a scris.
+10. O singură proteină principală pe rețetă: carne de vită SAU pui SAU pește SAU ouă. Dacă utilizatorul are mai multe, alege cea care se potrivește cu restul și lasă celelalte în "nefolosite". Nu pune ouă și pește sau ouă și carne în același preparat, decât în rețete clasice (ex: ochiuri pe pastramă).
+11. Combinații clasice care funcționează (alege din ele când se potrivesc): somon + cartofi + ceapă = somon la tigaie sau la cuptor cu cartofi; vită + cartofi + ceapă = tocană de vită cu cartofi sau vită la cuptor cu cartofi; pui + cartofi = pui la cuptor cu cartofi; pui + orez = pilaf cu pui; ouă + ceapă + cartofi = omletă țărănească sau ouă la tigaie cu cartofi; ouă + roșii + ceapă = ouă cu roșii; ouă + ciuperci = omletă cu ciuperci; paste + roșii + usturoi = paste cu sos de roșii; cartofi + brânză = cartofi gratinați sau cartofi cu brânză la cuptor. Dacă preferința este "Sub 15 minute", alege preparate rapide (la tigaie, omletă, paste, salată caldă), nu tocănițe.
+9. Folosește ingredientele EXACT cum au fost scrise, fără să le schimbi tipul. Dacă scrie "somon", e somon proaspăt (file), nu afumat. Dacă scrie "pui", e pui crud; "vită" înseamnă carne de vită crudă; "brânză" fără alte detalii înseamnă brânză de vaci sau telemea, după potrivire. Nu adăuga ca ingredient principal ceva ce nu e în listă.
+10. Simplitate: o proteină principală (ou, pește, carne sau brânză), cel mult o garnitură și cel mult o legumă. Maximum 3-4 ingrediente principale din listă, restul le pui în "nefolosite". Nu amesteca două feluri de carne sau carne cu pește în aceeași rețetă.
+11. Pentru "Sub 15 minute" alege doar preparate cu adevărat rapide (omletă, ochiuri, salată, sandviș cald, paste simple, pește la tigaie în felii subțiri). Ingredientele care cer gătire lungă (cartofi fierți sau copți, carne de vită, pui cu os) intră la "nefolosite".
 Răspunde STRICT cu un singur obiect JSON valid, fără text în afara lui, fără blocuri markdown și fără comentarii. Scrie în limba română corectă, cu toate diacriticele (ă, â, î, ș, ț) în titlu, ingrediente, pași și sfat. Structura exactă:
 {
+  "fel_clasic": "numele unui preparat real și cunoscut pe care îl gătești (completează acest câmp primul, înainte de restul)",
+  "ingrediente_alese": ["doar ingredientele primite pe care le folosești, exact cum au fost scrise"],
+  "idee_fel": "numele preparatului clasic ales și ce ingrediente intră în el, într-o singură propoziție",
   "titlu": "string",
+  "imagine_cautare": "numele preparatului în engleză, 2-5 cuvinte, pentru căutarea unei fotografii (ex: pan seared salmon potatoes)",
   "timp_preparare": "string, ex: 12 minute",
   "ingrediente": ["string cu cantitate", "..."],
   "pasi": ["primul pas", "al doilea pas", "..."],
@@ -63,7 +73,7 @@ async function handleRecipe(request, env) {
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.GROQ_API_KEY },
       body: JSON.stringify({
         model: MODEL,
-        temperature: 0.5,
+        temperature: 0.3,
         max_completion_tokens: 4000,
         response_format: { type: "json_object" },
         messages: [
@@ -79,6 +89,23 @@ async function handleRecipe(request, env) {
   return new Response(lastText, { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
+async function handleImage(request, env) {
+  if (!env.PEXELS_API_KEY) return reply({ error: "fără cheie Pexels" }, 404);
+  if (request.headers.get("Sec-Fetch-Site") === "cross-site") return reply({ error: "origine" }, 403);
+  const q = (new URL(request.url).searchParams.get("q") || "").trim().slice(0, 80);
+  if (!q) return reply({ error: "gol" }, 400);
+  const res = await fetch("https://api.pexels.com/v1/search?per_page=1&orientation=landscape&query=" + encodeURIComponent(q + " food dish"), {
+    headers: { "Authorization": env.PEXELS_API_KEY }
+  });
+  if (!res.ok) return reply({ error: "upstream" }, 502);
+  const data = await res.json();
+  const p = data.photos && data.photos[0];
+  if (!p) return reply({ error: "fără rezultate" }, 404);
+  return new Response(JSON.stringify({ url: p.src.large, autor: p.photographer, link: p.url }), {
+    headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" }
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -86,6 +113,7 @@ export default {
       if (request.method !== "POST") return reply({ error: "Metodă nepermisă" }, 405);
       return handleRecipe(request, env);
     }
+    if (url.pathname === "/api/image" && request.method === "GET") return handleImage(request, env);
     return env.ASSETS.fetch(request);
   }
 };
